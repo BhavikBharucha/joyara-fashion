@@ -79,7 +79,7 @@ export default function ProductCard({ product }: Props) {
           {/* Badges */}
           <div className="absolute top-3 left-3 flex flex-col gap-1">
             {product.discount_percent > 0 && (
-              <span className="bg-primary-600 text-white text-[10px] tracking-wider uppercase px-2 py-1">
+              <span className="bg-primary-800 text-white text-[10px] tracking-wider uppercase px-2 py-1">
                 -{product.discount_percent}%
               </span>
             )}

@@ -1,42 +1,48 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary-50: #fdf6f0;
-  --color-primary-100: #f9e8d8;
-  --color-primary-200: #f2ccae;
-  --color-primary-300: #e9a97d;
-  --color-primary-400: #de7e4d;
-  --color-primary-500: #d4612f;
-  --color-primary-600: #c54a24;
-  --color-primary-700: #a33820;
-  --color-primary-800: #832f21;
-  --color-primary-900: #6b291e;
+  /* Primary: Deep Burgundy/Maroon from Joyara logo */
+  --color-primary-50: #fdf2f4;
+  --color-primary-100: #fce7ea;
+  --color-primary-200: #f8d0d7;
+  --color-primary-300: #f2aab7;
+  --color-primary-400: #e87992;
+  --color-primary-500: #da4d6e;
+  --color-primary-600: #c62d55;
+  --color-primary-700: #a72145;
+  --color-primary-800: #7b2d3b;
+  --color-primary-900: #6a2836;
 
-  --color-secondary-50: #f5f5f4;
-  --color-secondary-100: #e6e4e2;
-  --color-secondary-200: #cec9c5;
-  --color-secondary-300: #b0a8a1;
-  --color-secondary-400: #8f847c;
-  --color-secondary-500: #756962;
-  --color-secondary-600: #635955;
-  --color-secondary-700: #524a47;
-  --color-secondary-800: #46403e;
-  --color-secondary-900: #3d3836;
+  /* Secondary: Warm neutral tones */
+  --color-secondary-50: #faf9f7;
+  --color-secondary-100: #f0edea;
+  --color-secondary-200: #ddd8d3;
+  --color-secondary-300: #c4bbb3;
+  --color-secondary-400: #a89d93;
+  --color-secondary-500: #918478;
+  --color-secondary-600: #7a6e63;
+  --color-secondary-700: #635952;
+  --color-secondary-800: #544c46;
+  --color-secondary-900: #3d3733;
 
-  --color-accent-50: #f0f5f4;
-  --color-accent-100: #d9e7e4;
-  --color-accent-200: #b3cfca;
-  --color-accent-300: #86b1aa;
-  --color-accent-400: #5f918a;
-  --color-accent-500: #467770;
-  --color-accent-600: #375f5a;
-  --color-accent-700: #2f4d49;
-  --color-accent-800: #293f3d;
-  --color-accent-900: #253634;
+  /* Accent: Soft rose gold */
+  --color-accent-50: #fef7f3;
+  --color-accent-100: #feeee5;
+  --color-accent-200: #fddacb;
+  --color-accent-300: #fbc0a5;
+  --color-accent-400: #f89a73;
+  --color-accent-500: #f27848;
+  --color-accent-600: #e35d2e;
+  --color-accent-700: #bd4a24;
+  --color-accent-800: #973e23;
+  --color-accent-900: #7a3621;
 
   --color-success: #22c55e;
   --color-warning: #eab308;
   --color-error: #ef4444;
+
+  /* Brand color direct reference */
+  --color-brand: #7b2d3b;
 
   --font-heading: 'Cormorant Garamond', serif;
   --font-body: 'Inter', sans-serif;
@@ -62,22 +68,22 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-secondary-900 text-white px-8 py-3 text-sm tracking-widest uppercase
-           hover:bg-secondary-700 transition-all duration-300 font-body font-medium;
+    @apply bg-primary-800 text-white px-8 py-3 text-sm tracking-widest uppercase
+           hover:bg-primary-900 transition-all duration-300 font-body font-medium;
   }
 
   .btn-secondary {
-    @apply border border-secondary-900 text-secondary-900 px-8 py-3 text-sm tracking-widest uppercase
-           hover:bg-secondary-900 hover:text-white transition-all duration-300 font-body font-medium;
+    @apply border border-primary-800 text-primary-800 px-8 py-3 text-sm tracking-widest uppercase
+           hover:bg-primary-800 hover:text-white transition-all duration-300 font-body font-medium;
   }
 
   .btn-accent {
-    @apply bg-primary-600 text-white px-8 py-3 text-sm tracking-widest uppercase
-           hover:bg-primary-700 transition-all duration-300 font-body font-medium;
+    @apply bg-accent-600 text-white px-8 py-3 text-sm tracking-widest uppercase
+           hover:bg-accent-700 transition-all duration-300 font-body font-medium;
   }
 
   .input-field {
-    @apply w-full border border-secondary-200 px-4 py-3 text-sm focus:outline-none focus:border-secondary-900
+    @apply w-full border border-secondary-200 px-4 py-3 text-sm focus:outline-none focus:border-primary-800
            transition-colors placeholder:text-secondary-400 font-body;
   }
 

@@ -128,7 +128,7 @@ export default function ProductDetail() {
             {product.sale_price && (
               <>
                 <span className="text-lg text-secondary-400 line-through">₹{Number(product.original_price).toLocaleString()}</span>
-                <span className="text-sm text-primary-600 font-medium">-{product.discount_percent}%</span>
+                <span className="text-sm text-primary-800 font-medium">-{product.discount_percent}%</span>
               </>
             )}
           </div>

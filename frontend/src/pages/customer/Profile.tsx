@@ -74,7 +74,7 @@ export default function Profile() {
       <div className="border border-secondary-100 p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm tracking-widest uppercase">Personal Information</h3>
-          <button onClick={() => setEditing(!editing)} className="text-sm text-primary-600 underline">
+          <button onClick={() => setEditing(!editing)} className="text-sm text-primary-800 underline">
             {editing ? 'Cancel' : 'Edit'}
           </button>
         </div>
@@ -100,7 +100,7 @@ export default function Profile() {
       <div className="border border-secondary-100 p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm tracking-widest uppercase">Password</h3>
-          <button onClick={() => setShowPassword(!showPassword)} className="text-sm text-primary-600 underline">
+          <button onClick={() => setShowPassword(!showPassword)} className="text-sm text-primary-800 underline">
             {showPassword ? 'Cancel' : 'Change Password'}
           </button>
         </div>

@@ -47,9 +47,9 @@ export default function AdminLayout() {
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed md:static inset-y-0 left-0 z-50 w-64 bg-secondary-900 text-white transform transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
-        <div className="flex items-center justify-between p-6 border-b border-secondary-700">
-          <Link to="/admin" className="font-heading text-xl tracking-wider uppercase">Joyara Admin</Link>
+      <aside className={`fixed md:static inset-y-0 left-0 z-50 w-64 bg-primary-800 text-white transform transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
+        <div className="flex items-center justify-between p-6 border-b border-primary-700">
+          <Link to="/admin" className="flex items-center gap-2"><img src="/logo.png" alt="Joyara" className="h-8 w-auto brightness-0 invert" /><span className="text-sm tracking-widest uppercase">Admin</span></Link>
           <button onClick={() => setSidebarOpen(false)} className="md:hidden">
             <XMarkIcon className="w-6 h-6" />
           </button>

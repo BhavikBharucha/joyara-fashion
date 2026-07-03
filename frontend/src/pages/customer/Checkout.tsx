@@ -109,7 +109,7 @@ export default function Checkout() {
           <div>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm tracking-widest uppercase">Shipping Address</h3>
-              <button onClick={() => setShowAddressForm(!showAddressForm)} className="text-sm text-primary-600 underline">
+              <button onClick={() => setShowAddressForm(!showAddressForm)} className="text-sm text-primary-800 underline">
                 {showAddressForm ? 'Cancel' : 'Add New'}
               </button>
             </div>

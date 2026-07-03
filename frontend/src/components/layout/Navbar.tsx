@@ -24,7 +24,7 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-secondary-100">
       {/* Top bar */}
-      <div className="bg-secondary-900 text-white text-center py-2 text-xs tracking-widest uppercase">
+      <div className="bg-primary-800 text-white text-center py-2 text-xs tracking-widest uppercase">
         Free Shipping on Orders Above ₹999
       </div>
 
@@ -36,44 +36,44 @@ export default function Navbar() {
           </button>
 
           {/* Logo */}
-          <Link to="/" className="font-heading text-2xl md:text-3xl tracking-wider text-secondary-900 uppercase">
-            Joyara
+          <Link to="/" className="flex items-center">
+            <img src="/logo.png" alt="Joyara" className="h-10 md:h-14 w-auto" />
           </Link>
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center space-x-8 text-sm tracking-widest uppercase">
-            <Link to="/categories" className="hover:text-primary-600 transition-colors">Shop</Link>
-            <Link to="/search?sort_by=newest" className="hover:text-primary-600 transition-colors">New Arrivals</Link>
-            <Link to="/search?is_trending=true" className="hover:text-primary-600 transition-colors">Trending</Link>
-            <Link to="/about" className="hover:text-primary-600 transition-colors">About</Link>
+            <Link to="/categories" className="hover:text-primary-800 transition-colors">Shop</Link>
+            <Link to="/search?sort_by=newest" className="hover:text-primary-800 transition-colors">New Arrivals</Link>
+            <Link to="/search?is_trending=true" className="hover:text-primary-800 transition-colors">Trending</Link>
+            <Link to="/about" className="hover:text-primary-800 transition-colors">About</Link>
           </div>
 
           {/* Icons */}
           <div className="flex items-center space-x-4">
-            <button onClick={() => setSearchOpen(!searchOpen)} className="p-2 hover:text-primary-600 transition-colors">
+            <button onClick={() => setSearchOpen(!searchOpen)} className="p-2 hover:text-primary-800 transition-colors">
               <MagnifyingGlassIcon className="w-5 h-5" />
             </button>
-            <Link to={isAuthenticated ? '/profile' : '/login'} className="p-2 hover:text-primary-600 transition-colors hidden sm:block">
+            <Link to={isAuthenticated ? '/profile' : '/login'} className="p-2 hover:text-primary-800 transition-colors hidden sm:block">
               <UserIcon className="w-5 h-5" />
             </Link>
-            <Link to="/wishlist" className="p-2 hover:text-primary-600 transition-colors relative hidden sm:block">
+            <Link to="/wishlist" className="p-2 hover:text-primary-800 transition-colors relative hidden sm:block">
               <HeartIcon className="w-5 h-5" />
               {wishlistItems.length > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-primary-600 text-white text-[10px] rounded-full flex items-center justify-center">
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-primary-800 text-white text-[10px] rounded-full flex items-center justify-center">
                   {wishlistItems.length}
                 </span>
               )}
             </Link>
-            <Link to="/cart" className="p-2 hover:text-primary-600 transition-colors relative">
+            <Link to="/cart" className="p-2 hover:text-primary-800 transition-colors relative">
               <ShoppingBagIcon className="w-5 h-5" />
               {cartItems.length > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-primary-600 text-white text-[10px] rounded-full flex items-center justify-center">
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-primary-800 text-white text-[10px] rounded-full flex items-center justify-center">
                   {cartItems.length}
                 </span>
               )}
             </Link>
             {isAuthenticated && user?.role === 'admin' && (
-              <Link to="/admin" className="hidden md:block text-xs tracking-widest uppercase hover:text-primary-600">
+              <Link to="/admin" className="hidden md:block text-xs tracking-widest uppercase hover:text-primary-800">
                 Admin
               </Link>
             )}

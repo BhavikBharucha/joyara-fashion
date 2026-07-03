@@ -141,7 +141,7 @@ export default function AdminProducts() {
                   <input value={v.stock} onChange={(e) => { const vs = [...form.variants]; vs[i] = { ...vs[i], stock: parseInt(e.target.value) || 0 }; setForm({ ...form, variants: vs }); }} placeholder="Stock" type="number" className="input-field text-sm" />
                 </div>
               ))}
-              <button type="button" onClick={() => setForm({ ...form, variants: [...form.variants, { size: '', color: '', color_hex: '', stock: 0, additional_price: 0, is_active: true }] })} className="text-sm text-primary-600 underline">
+              <button type="button" onClick={() => setForm({ ...form, variants: [...form.variants, { size: '', color: '', color_hex: '', stock: 0, additional_price: 0, is_active: true }] })} className="text-sm text-primary-800 underline">
                 + Add Variant
               </button>
             </div>

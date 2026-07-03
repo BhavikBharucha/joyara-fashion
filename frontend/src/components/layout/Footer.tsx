@@ -2,11 +2,11 @@ import { Link } from 'react-router-dom';
 
 export default function Footer() {
   return (
-    <footer className="bg-secondary-900 text-white">
+    <footer className="bg-primary-800 text-white">
       <div className="container-custom py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           <div>
-            <h3 className="font-heading text-2xl tracking-wider uppercase mb-4">Joyara</h3>
+            <img src="/logo.png" alt="Joyara" className="h-12 w-auto mb-4 brightness-0 invert" />
             <p className="text-secondary-300 text-sm leading-relaxed">
               Curated women's fashion that celebrates elegance, comfort, and modern style.
             </p>
@@ -36,7 +36,7 @@ export default function Footer() {
               <input
                 type="email"
                 placeholder="Your email"
-                className="flex-1 bg-secondary-800 border border-secondary-700 px-4 py-2 text-sm focus:outline-none focus:border-white transition-colors"
+                className="flex-1 bg-primary-900 border border-primary-700 px-4 py-2 text-sm focus:outline-none focus:border-white transition-colors"
               />
               <button className="bg-white text-secondary-900 px-4 py-2 text-sm tracking-widest uppercase hover:bg-secondary-100 transition-colors">
                 Join
@@ -44,7 +44,7 @@ export default function Footer() {
             </form>
           </div>
         </div>
-        <div className="border-t border-secondary-700 mt-12 pt-8 text-center text-secondary-400 text-xs tracking-wider">
+        <div className="border-t border-primary-700 mt-12 pt-8 text-center text-primary-200 text-xs tracking-wider">
           &copy; {new Date().getFullYear()} Joyara Fashion. All rights reserved.
         </div>
       </div>
