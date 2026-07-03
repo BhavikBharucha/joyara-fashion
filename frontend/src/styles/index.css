@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary-50: #fdf6f0;
+  --color-primary-100: #f9e8d8;
+  --color-primary-200: #f2ccae;
+  --color-primary-300: #e9a97d;
+  --color-primary-400: #de7e4d;
+  --color-primary-500: #d4612f;
+  --color-primary-600: #c54a24;
+  --color-primary-700: #a33820;
+  --color-primary-800: #832f21;
+  --color-primary-900: #6b291e;
+
+  --color-secondary-50: #f5f5f4;
+  --color-secondary-100: #e6e4e2;
+  --color-secondary-200: #cec9c5;
+  --color-secondary-300: #b0a8a1;
+  --color-secondary-400: #8f847c;
+  --color-secondary-500: #756962;
+  --color-secondary-600: #635955;
+  --color-secondary-700: #524a47;
+  --color-secondary-800: #46403e;
+  --color-secondary-900: #3d3836;
+
+  --color-accent-50: #f0f5f4;
+  --color-accent-100: #d9e7e4;
+  --color-accent-200: #b3cfca;
+  --color-accent-300: #86b1aa;
+  --color-accent-400: #5f918a;
+  --color-accent-500: #467770;
+  --color-accent-600: #375f5a;
+  --color-accent-700: #2f4d49;
+  --color-accent-800: #293f3d;
+  --color-accent-900: #253634;
+
+  --color-success: #22c55e;
+  --color-warning: #eab308;
+  --color-error: #ef4444;
+
+  --font-heading: 'Cormorant Garamond', serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+@layer base {
+  @font-face {
+    font-family: 'Cormorant Garamond';
+    font-style: normal;
+    font-weight: 300 700;
+    font-display: swap;
+    src: url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&display=swap');
+  }
+
+  body {
+    @apply font-body text-secondary-900 bg-white antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-secondary-900 text-white px-8 py-3 text-sm tracking-widest uppercase
+           hover:bg-secondary-700 transition-all duration-300 font-body font-medium;
+  }
+
+  .btn-secondary {
+    @apply border border-secondary-900 text-secondary-900 px-8 py-3 text-sm tracking-widest uppercase
+           hover:bg-secondary-900 hover:text-white transition-all duration-300 font-body font-medium;
+  }
+
+  .btn-accent {
+    @apply bg-primary-600 text-white px-8 py-3 text-sm tracking-widest uppercase
+           hover:bg-primary-700 transition-all duration-300 font-body font-medium;
+  }
+
+  .input-field {
+    @apply w-full border border-secondary-200 px-4 py-3 text-sm focus:outline-none focus:border-secondary-900
+           transition-colors placeholder:text-secondary-400 font-body;
+  }
+
+  .card {
+    @apply bg-white border border-secondary-100 shadow-sm hover:shadow-md transition-shadow duration-300;
+  }
+
+  .section-title {
+    @apply font-heading text-3xl md:text-4xl text-secondary-900 tracking-wide;
+  }
+
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+}
+
+@layer utilities {
+  .skeleton {
+    @apply animate-pulse bg-secondary-100 rounded;
+  }
+}
