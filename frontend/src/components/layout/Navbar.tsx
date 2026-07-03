@@ -37,7 +37,7 @@ export default function Navbar() {
 
           {/* Logo */}
           <Link to="/" className="flex items-center">
-            <img src="/logo.png" alt="Joyara" className="h-10 md:h-14 w-auto" />
+            <img src="/logo.png" alt="Joyara" className="h-14 md:h-18 w-auto" />
           </Link>
 
           {/* Desktop nav */}
