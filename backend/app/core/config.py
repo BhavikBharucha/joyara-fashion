@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = True
 
-    DATABASE_URL: str = "mysql+asyncmy://joyara_user:JoyaraFash2024!@localhost:3306/joyara_fashion"
+    DATABASE_URL: str = "mysql+aiomysql://joyara_user:JoyaraFash2024!@localhost:3306/joyara_fashion"
 
     SECRET_KEY: str = "change-me"
     ALGORITHM: str = "HS256"
