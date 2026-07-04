@@ -106,6 +106,8 @@ class ProductService:
             raise HTTPException(status_code=404, detail="Product not found")
 
         update_data = data.model_dump(exclude_unset=True)
+        variants_data = update_data.pop("variants", None)
+
         if "name" in update_data:
             update_data["slug"] = slugify(update_data["name"])
 
@@ -115,6 +117,43 @@ class ProductService:
             update_data["discount_percent"] = round(((float(op) - float(sp)) / float(op)) * 100)
 
         await self.repo.update(product, update_data)
+
+        if variants_data is not None:
+            existing_variants = await self.variant_repo.get_by_product(product.id)
+            existing_ids = {v.id for v in existing_variants}
+            incoming_ids = {v["id"] for v in variants_data if v.get("id")}
+
+            for ev in existing_variants:
+                if ev.id not in incoming_ids:
+                    await self.variant_repo.delete(ev)
+
+            total_stock = 0
+            for v_data in variants_data:
+                vid = v_data.pop("id", None)
+                if vid and vid in existing_ids:
+                    ev = next(v for v in existing_variants if v.id == vid)
+                    for k, val in v_data.items():
+                        setattr(ev, k, val)
+                    ev.sku_variant = f"{product.sku}-{v_data['size']}-{v_data['color']}".upper().replace(" ", "-")
+                    total_stock += v_data.get("stock", 0)
+                else:
+                    sku_variant = f"{product.sku}-{v_data['size']}-{v_data['color']}".upper().replace(" ", "-")
+                    variant = ProductVariant(
+                        product_id=product.id,
+                        size=v_data["size"],
+                        color=v_data["color"],
+                        color_hex=v_data.get("color_hex"),
+                        sku_variant=sku_variant,
+                        stock=v_data.get("stock", 0),
+                        additional_price=v_data.get("additional_price", 0),
+                        is_active=v_data.get("is_active", True),
+                    )
+                    await self.variant_repo.create(variant)
+                    total_stock += v_data.get("stock", 0)
+
+            product.total_stock = total_stock
+            await self.db.flush()
+
         return await self._get_product_response(product_id)
 
     async def delete(self, product_id: str) -> None:

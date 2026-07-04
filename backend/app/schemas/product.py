@@ -54,6 +54,16 @@ class ProductCreate(ProductBase):
     variants: List[ProductVariantCreate] = []
 
 
+class ProductVariantUpdate(BaseModel):
+    id: Optional[str] = None
+    size: str = Field(..., max_length=20)
+    color: str = Field(..., max_length=50)
+    color_hex: Optional[str] = Field(None, max_length=7)
+    stock: int = Field(0, ge=0)
+    additional_price: Decimal = Field(default=Decimal("0"))
+    is_active: bool = True
+
+
 class ProductUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=255)
     description: Optional[str] = None
@@ -67,6 +77,7 @@ class ProductUpdate(BaseModel):
     is_featured: Optional[bool] = None
     is_trending: Optional[bool] = None
     is_new_arrival: Optional[bool] = None
+    variants: Optional[List[ProductVariantUpdate]] = None
 
 
 class ProductResponse(ProductBase):

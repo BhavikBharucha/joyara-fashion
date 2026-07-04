@@ -17,7 +17,7 @@ export default function AdminProducts() {
   const [form, setForm] = useState({
     name: '', description: '', short_description: '', original_price: '', sale_price: '', discount_percent: '0',
     category_id: '', tags: '', is_active: true, is_featured: false, is_trending: false, is_new_arrival: true,
-    variants: [{ size: 'M', color: 'Black', color_hex: '#000000', stock: 10, additional_price: 0, is_active: true }],
+    variants: [{ id: '', size: 'M', color: 'Black', color_hex: '#000000', stock: 10, additional_price: 0, is_active: true }] as { id?: string; size: string; color: string; color_hex: string; stock: number; additional_price: number; is_active: boolean }[],
   });
   const queryClient = useQueryClient();
 
@@ -57,7 +57,7 @@ export default function AdminProducts() {
     setForm({
       name: '', description: '', short_description: '', original_price: '', sale_price: '', discount_percent: '0',
       category_id: '', tags: '', is_active: true, is_featured: false, is_trending: false, is_new_arrival: true,
-      variants: [{ size: 'M', color: 'Black', color_hex: '#000000', stock: 10, additional_price: 0, is_active: true }],
+      variants: [{ id: '', size: 'M', color: 'Black', color_hex: '#000000', stock: 10, additional_price: 0, is_active: true }],
     });
   };
 
@@ -69,11 +69,18 @@ export default function AdminProducts() {
       sale_price: form.sale_price ? parseFloat(form.sale_price) : null,
       discount_percent: parseInt(form.discount_percent) || 0,
       category_id: form.category_id || null,
+      variants: form.variants.map((v) => ({
+        ...(v.id ? { id: v.id } : {}),
+        size: v.size,
+        color: v.color,
+        color_hex: v.color_hex || null,
+        stock: v.stock,
+        additional_price: v.additional_price,
+        is_active: v.is_active,
+      })),
     };
     if (editId) {
-      const { variants: _variants, ...rest } = payload;
-      void _variants;
-      updateMutation.mutate({ id: editId, data: rest });
+      updateMutation.mutate({ id: editId, data: payload });
     } else {
       createMutation.mutate(payload);
     }
@@ -94,7 +101,7 @@ export default function AdminProducts() {
       is_featured: product.is_featured,
       is_trending: product.is_trending,
       is_new_arrival: product.is_new_arrival,
-      variants: product.variants.length > 0 ? product.variants.map((v) => ({ ...v, color_hex: v.color_hex || '' })) : [{ size: 'M', color: 'Black', color_hex: '#000000', stock: 10, additional_price: 0, is_active: true }],
+      variants: product.variants.length > 0 ? product.variants.map((v) => ({ id: v.id, size: v.size, color: v.color, color_hex: v.color_hex || '', stock: v.stock, additional_price: Number(v.additional_price), is_active: v.is_active })) : [{ id: '', size: 'M', color: 'Black', color_hex: '#000000', stock: 10, additional_price: 0, is_active: true }],
     });
     setProductImages(product.images || []);
     setEditId(productId);
@@ -231,8 +238,7 @@ export default function AdminProducts() {
           </div>
 
           {/* Variants */}
-          {!editId && (
-            <div>
+          <div>
               <h4 className="text-sm font-medium mb-2">Variants</h4>
               {form.variants.map((v, i) => (
                 <div key={i} className="flex items-center gap-2 mb-3 p-3 border border-gray-100 rounded-lg bg-gray-50/50">
@@ -261,11 +267,10 @@ export default function AdminProducts() {
                   </button>
                 </div>
               ))}
-              <button type="button" onClick={() => setForm({ ...form, variants: [...form.variants, { size: '', color: '', color_hex: '', stock: 0, additional_price: 0, is_active: true }] })} className="text-sm text-primary-800 underline">
+              <button type="button" onClick={() => setForm({ ...form, variants: [...form.variants, { id: '', size: '', color: '', color_hex: '', stock: 0, additional_price: 0, is_active: true }] })} className="text-sm text-primary-800 underline">
                 + Add Variant
               </button>
             </div>
-          )}
 
           {/* Image Upload (only when editing an existing product) */}
           {editId && (
