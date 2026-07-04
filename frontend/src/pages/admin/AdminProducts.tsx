@@ -13,6 +13,7 @@ export default function AdminProducts() {
   const [editId, setEditId] = useState<string | null>(null);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [productImages, setProductImages] = useState<ProductImage[]>([]);
+  const [selectedImageColor, setSelectedImageColor] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({
     name: '', description: '', short_description: '', original_price: '', sale_price: '', discount_percent: '0',
@@ -111,15 +112,17 @@ export default function AdminProducts() {
   const handleImageUpload = async (files: FileList | null) => {
     if (!files || !editId) return;
     setUploadingImages(true);
+    const color = selectedImageColor || undefined;
     try {
       for (let i = 0; i < files.length; i++) {
-        const isPrimary = productImages.length === 0 && i === 0;
-        await productService.uploadImage(editId, files[i], isPrimary);
+        const colorImages = productImages.filter((img) => (img.color || '') === (color || ''));
+        const isPrimary = colorImages.length === 0 && i === 0;
+        await productService.uploadImage(editId, files[i], isPrimary, color);
       }
       const { data: product } = await productService.getById(editId);
       setProductImages(product.images || []);
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
-      toast.success(`${files.length} image(s) uploaded`);
+      toast.success(`${files.length} image(s) uploaded for ${color || 'general'}`);
     } catch {
       toast.error('Failed to upload image');
     } finally {
@@ -242,7 +245,7 @@ export default function AdminProducts() {
               <h4 className="text-sm font-medium mb-2">Variants</h4>
               {form.variants.map((v, i) => (
                 <div key={i} className="flex items-center gap-2 mb-3 p-3 border border-gray-100 rounded-lg bg-gray-50/50">
-                  <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-2">
+                  <div className="flex-1 grid grid-cols-2 md:grid-cols-5 gap-2">
                     <input value={v.size} onChange={(e) => updateVariant(i, 'size', e.target.value)} placeholder="Size (S, M, L...)" className="input-field text-sm" />
                     <div className="flex items-center gap-2">
                       <input
@@ -256,6 +259,7 @@ export default function AdminProducts() {
                     </div>
                     <input value={v.color_hex} onChange={(e) => updateVariant(i, 'color_hex', e.target.value)} placeholder="#hex" className="input-field text-sm" />
                     <input value={v.stock} onChange={(e) => updateVariant(i, 'stock', parseInt(e.target.value) || 0)} placeholder="Stock" type="number" className="input-field text-sm" />
+                    <input value={v.additional_price} onChange={(e) => updateVariant(i, 'additional_price', parseFloat(e.target.value) || 0)} placeholder="Extra Price" type="number" step="0.01" className="input-field text-sm" title="Additional price for this variant" />
                   </div>
                   <button
                     type="button"
@@ -277,26 +281,78 @@ export default function AdminProducts() {
             <div>
               <h4 className="text-sm font-medium mb-3">Product Images</h4>
 
-              {/* Existing images */}
-              {productImages.length > 0 && (
-                <div className="flex flex-wrap gap-3 mb-4">
-                  {productImages.map((img) => (
-                    <div key={img.id} className="relative group w-24 h-24 border border-gray-200 rounded-lg overflow-hidden">
-                      <img src={img.image_url} alt={img.alt_text || ''} className="w-full h-full object-cover" />
-                      {img.is_primary && (
-                        <span className="absolute top-1 left-1 bg-primary-800 text-white text-[9px] px-1.5 py-0.5 rounded">Primary</span>
-                      )}
+              {/* Color selector for image upload */}
+              {(() => {
+                const variantColors = [...new Set(form.variants.map((v) => v.color).filter(Boolean))];
+                return variantColors.length > 0 && (
+                  <div className="mb-4">
+                    <p className="text-xs text-gray-500 mb-2">Select color to upload images for:</p>
+                    <div className="flex flex-wrap gap-2">
                       <button
                         type="button"
-                        onClick={() => handleDeleteImage(img.id)}
-                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => setSelectedImageColor('')}
+                        className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
+                          selectedImageColor === '' ? 'bg-primary-800 text-white border-primary-800' : 'border-gray-300 hover:border-primary-800'
+                        }`}
                       >
-                        <XMarkIcon className="w-3.5 h-3.5" />
+                        General
                       </button>
+                      {variantColors.map((color) => {
+                        const variant = form.variants.find((v) => v.color === color);
+                        const imgCount = productImages.filter((img) => img.color === color).length;
+                        return (
+                          <button
+                            key={color}
+                            type="button"
+                            onClick={() => setSelectedImageColor(color)}
+                            className={`px-3 py-1.5 text-xs rounded-full border transition-colors flex items-center gap-1.5 ${
+                              selectedImageColor === color ? 'bg-primary-800 text-white border-primary-800' : 'border-gray-300 hover:border-primary-800'
+                            }`}
+                          >
+                            {variant?.color_hex && (
+                              <span className="w-3 h-3 rounded-full inline-block border border-white/30" style={{ backgroundColor: variant.color_hex }} />
+                            )}
+                            {color}
+                            {imgCount > 0 && <span className="opacity-70">({imgCount})</span>}
+                          </button>
+                        );
+                      })}
                     </div>
-                  ))}
-                </div>
-              )}
+                  </div>
+                );
+              })()}
+
+              {/* Existing images filtered by selected color */}
+              {(() => {
+                const filteredImages = productImages.filter((img) => (img.color || '') === selectedImageColor);
+                return filteredImages.length > 0 && (
+                  <div className="mb-4">
+                    <p className="text-xs text-gray-400 mb-2">
+                      {selectedImageColor ? `Images for ${selectedImageColor}` : 'General images'} ({filteredImages.length})
+                    </p>
+                    <div className="flex flex-wrap gap-3">
+                      {filteredImages.map((img) => (
+                        <div key={img.id} className="relative group w-24 h-24 border border-gray-200 rounded-lg overflow-hidden">
+                          <img src={img.image_url} alt={img.alt_text || ''} className="w-full h-full object-cover" />
+                          {img.is_primary && (
+                            <span className="absolute top-1 left-1 bg-primary-800 text-white text-[9px] px-1.5 py-0.5 rounded">Primary</span>
+                          )}
+                          {img.color && (
+                            <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[8px] px-1 py-0.5 rounded">{img.color}</span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteImage(img.id)}
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <XMarkIcon className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Upload area */}
               <input
@@ -314,14 +370,10 @@ export default function AdminProducts() {
               >
                 <PhotoIcon className="w-8 h-8 text-gray-400 mb-2" />
                 <span className="text-sm text-gray-500">
-                  {uploadingImages ? 'Uploading...' : 'Click to upload images'}
+                  {uploadingImages ? 'Uploading...' : `Upload images for ${selectedImageColor || 'General'}`}
                 </span>
                 <span className="text-xs text-gray-400 mt-1">PNG, JPG up to 5MB each</span>
               </label>
-
-              {!editId && (
-                <p className="text-xs text-gray-400 mt-2">Save the product first, then you can upload images.</p>
-              )}
             </div>
           )}
 

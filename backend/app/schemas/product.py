@@ -9,6 +9,7 @@ class ProductImageResponse(BaseModel):
     id: str
     image_url: str
     alt_text: Optional[str] = None
+    color: Optional[str] = None
     is_primary: bool
     sort_order: int
 

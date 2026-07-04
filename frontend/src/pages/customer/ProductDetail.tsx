@@ -87,11 +87,23 @@ export default function ProductDetail() {
     return product.total_stock || 1;
   }, [product, selectedVariant, selectedColor, selectedSize]);
 
+  const displayImages = useMemo(() => {
+    if (!product) return [];
+    if (selectedColor) {
+      const colorImgs = product.images.filter((img) => img.color === selectedColor);
+      if (colorImgs.length > 0) return colorImgs;
+    }
+    const generalImgs = product.images.filter((img) => !img.color);
+    return generalImgs.length > 0 ? generalImgs : product.images;
+  }, [product, selectedColor]);
+
   if (isLoading) return <div className="container-custom py-20"><ProductGridSkeleton count={1} /></div>;
   if (!product) return <div className="container-custom py-20 text-center">Product not found</div>;
 
   const isWishlisted = wishlistItems.some((i) => i.product_id === product.id);
-  const effectivePrice = product.sale_price || product.original_price;
+  const basePrice = product.sale_price || product.original_price;
+  const variantExtra = selectedVariant ? Number(selectedVariant.additional_price) : 0;
+  const effectivePrice = Number(basePrice) + variantExtra;
   const allSizes = [...new Set(product.variants.map((v) => v.size))];
   const allColors = [...new Set(product.variants.map((v) => v.color))];
 
@@ -103,10 +115,7 @@ export default function ProductDetail() {
   const handleColorSelect = (color: string) => {
     setSelectedColor(color);
     setQuantity(1);
-    const colorIndex = product.images.findIndex((img) =>
-      img.alt_text?.toLowerCase().includes(color.toLowerCase())
-    );
-    if (colorIndex >= 0) setSelectedImage(colorIndex);
+    setSelectedImage(0);
   };
 
   const handleAddToCart = async () => {
@@ -151,16 +160,16 @@ export default function ProductDetail() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16">
         {/* Images */}
         <div>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="aspect-[3/4] bg-secondary-50 overflow-hidden mb-4">
-            {product.images[selectedImage] ? (
-              <img src={product.images[selectedImage].image_url} alt={product.name} className="w-full h-full object-cover" />
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} key={displayImages[selectedImage]?.id || selectedColor} className="aspect-[3/4] bg-secondary-50 overflow-hidden mb-4">
+            {displayImages[selectedImage] ? (
+              <img src={displayImages[selectedImage].image_url} alt={product.name} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-secondary-300">No Image</div>
             )}
           </motion.div>
-          {product.images.length > 1 && (
+          {displayImages.length > 1 && (
             <div className="flex gap-2 overflow-x-auto">
-              {product.images.map((img, i) => (
+              {displayImages.map((img, i) => (
                 <button
                   key={img.id}
                   onClick={() => setSelectedImage(i)}
@@ -179,12 +188,15 @@ export default function ProductDetail() {
           <p className="text-sm text-secondary-500 mb-4">SKU: {product.sku}</p>
 
           <div className="flex items-center gap-3 mb-6">
-            <span className="text-2xl font-medium text-secondary-900">₹{Number(effectivePrice).toLocaleString()}</span>
+            <span className="text-2xl font-medium text-secondary-900">₹{effectivePrice.toLocaleString()}</span>
             {product.sale_price && (
               <>
-                <span className="text-lg text-secondary-400 line-through">₹{Number(product.original_price).toLocaleString()}</span>
+                <span className="text-lg text-secondary-400 line-through">₹{(Number(product.original_price) + variantExtra).toLocaleString()}</span>
                 <span className="text-sm text-primary-800 font-medium">-{product.discount_percent}%</span>
               </>
+            )}
+            {variantExtra > 0 && (
+              <span className="text-xs text-secondary-400">(+₹{variantExtra.toLocaleString()} for {selectedColor})</span>
             )}
           </div>
 

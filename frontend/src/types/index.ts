@@ -36,6 +36,7 @@ export interface ProductImage {
   id: string;
   image_url: string;
   alt_text: string | null;
+  color: string | null;
   is_primary: boolean;
   sort_order: number;
 }

@@ -122,11 +122,12 @@ async def upload_product_image(
     product_id: str,
     file: UploadFile = File(...),
     is_primary: bool = Query(False),
+    color: Optional[str] = Query(None),
     admin: User = Depends(get_admin_user),
     db: AsyncSession = Depends(get_db),
 ):
     service = ProductService(db)
-    return await service.upload_image(product_id, file, is_primary)
+    return await service.upload_image(product_id, file, is_primary, color)
 
 
 @router.delete("/images/{image_id}", response_model=MessageResponse)

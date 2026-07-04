@@ -37,10 +37,12 @@ export const productService = {
 
   delete: (id: string) => api.delete(`/products/${id}`),
 
-  uploadImage: (productId: string, file: File, isPrimary = false) => {
+  uploadImage: (productId: string, file: File, isPrimary = false, color?: string) => {
     const formData = new FormData();
     formData.append('file', file);
-    return api.post(`/products/${productId}/images?is_primary=${isPrimary}`, formData, {
+    const params = new URLSearchParams({ is_primary: String(isPrimary) });
+    if (color) params.set('color', color);
+    return api.post(`/products/${productId}/images?${params.toString()}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },

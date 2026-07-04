@@ -52,6 +52,7 @@ class ProductImage(Base):
     product_id = Column(String(36), ForeignKey("products.id", ondelete="CASCADE"), nullable=False)
     image_url = Column(String(500), nullable=False)
     alt_text = Column(String(255), nullable=True)
+    color = Column(String(50), nullable=True, index=True)
     is_primary = Column(Boolean, default=False, nullable=False)
     sort_order = Column(Integer, default=0, nullable=False)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)

@@ -208,7 +208,7 @@ class ProductService:
         }
 
     async def upload_image(
-        self, product_id: str, file: UploadFile, is_primary: bool = False
+        self, product_id: str, file: UploadFile, is_primary: bool = False, color: str | None = None
     ) -> dict:
         product = await self.repo.get_by_id(product_id)
         if not product:
@@ -228,11 +228,12 @@ class ProductService:
         image = ProductImage(
             product_id=product_id,
             image_url=image_url,
+            color=color,
             is_primary=is_primary,
             sort_order=sort_order,
         )
         image = await self.image_repo.create(image)
-        return {"id": image.id, "image_url": image.image_url, "is_primary": image.is_primary}
+        return {"id": image.id, "image_url": image.image_url, "color": image.color, "is_primary": image.is_primary}
 
     async def delete_image(self, image_id: str) -> None:
         image = await self.image_repo.get_by_id(image_id)
