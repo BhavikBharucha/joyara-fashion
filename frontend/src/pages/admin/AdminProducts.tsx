@@ -203,9 +203,22 @@ export default function AdminProducts() {
           <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Description" rows={3} className="input-field" />
           <input value={form.short_description} onChange={(e) => setForm({ ...form, short_description: e.target.value })} placeholder="Short Description" className="input-field" />
           <div className="grid grid-cols-3 gap-4">
-            <input value={form.original_price} onChange={(e) => setForm({ ...form, original_price: e.target.value })} placeholder="Original Price *" type="number" step="0.01" className="input-field" required />
-            <input value={form.sale_price} onChange={(e) => setForm({ ...form, sale_price: e.target.value })} placeholder="Sale Price" type="number" step="0.01" className="input-field" />
-            <input value={form.discount_percent} onChange={(e) => setForm({ ...form, discount_percent: e.target.value })} placeholder="Discount %" type="number" className="input-field" />
+            <input value={form.original_price} onChange={(e) => {
+              const op = e.target.value;
+              const sp = form.sale_price;
+              const disc = op && sp && parseFloat(op) > 0 ? Math.round(((parseFloat(op) - parseFloat(sp)) / parseFloat(op)) * 100) : 0;
+              setForm({ ...form, original_price: op, discount_percent: String(disc >= 0 ? disc : 0) });
+            }} placeholder="Original Price *" type="number" step="0.01" className="input-field" required />
+            <input value={form.sale_price} onChange={(e) => {
+              const sp = e.target.value;
+              const op = form.original_price;
+              const disc = op && sp && parseFloat(op) > 0 ? Math.round(((parseFloat(op) - parseFloat(sp)) / parseFloat(op)) * 100) : 0;
+              setForm({ ...form, sale_price: sp, discount_percent: String(disc >= 0 ? disc : 0) });
+            }} placeholder="Sale Price" type="number" step="0.01" className="input-field" />
+            <div className="relative">
+              <input value={form.discount_percent} readOnly placeholder="Discount %" type="number" className="input-field bg-gray-50 cursor-not-allowed" tabIndex={-1} />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">Auto</span>
+            </div>
           </div>
           <input value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })} placeholder="Tags (comma separated)" className="input-field" />
           <div className="flex flex-wrap gap-4">
