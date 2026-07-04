@@ -18,7 +18,7 @@ export default function AdminProducts() {
   const [form, setForm] = useState({
     name: '', description: '', short_description: '', original_price: '', sale_price: '', discount_percent: '0',
     category_id: '', tags: '', is_active: true, is_featured: false, is_trending: false, is_new_arrival: true,
-    variants: [{ id: '', size: 'M', color: 'Black', color_hex: '#000000', stock: 10, additional_price: 0, is_active: true }] as { id?: string; size: string; color: string; color_hex: string; stock: number; additional_price: number; is_active: boolean }[],
+    variants: [{ id: '', size: 'M', color: 'Black', color_hex: '#000000', stock: 10, additional_price: '0', is_active: true }] as { id?: string; size: string; color: string; color_hex: string; stock: number; additional_price: string; is_active: boolean }[],
   });
   const queryClient = useQueryClient();
 
@@ -58,7 +58,7 @@ export default function AdminProducts() {
     setForm({
       name: '', description: '', short_description: '', original_price: '', sale_price: '', discount_percent: '0',
       category_id: '', tags: '', is_active: true, is_featured: false, is_trending: false, is_new_arrival: true,
-      variants: [{ id: '', size: 'M', color: 'Black', color_hex: '#000000', stock: 10, additional_price: 0, is_active: true }],
+      variants: [{ id: '', size: 'M', color: 'Black', color_hex: '#000000', stock: 10, additional_price: '0', is_active: true }],
     });
   };
 
@@ -76,7 +76,7 @@ export default function AdminProducts() {
         color: v.color,
         color_hex: v.color_hex || null,
         stock: v.stock,
-        additional_price: v.additional_price,
+        additional_price: parseFloat(v.additional_price) || 0,
         is_active: v.is_active,
       })),
     };
@@ -102,7 +102,7 @@ export default function AdminProducts() {
       is_featured: product.is_featured,
       is_trending: product.is_trending,
       is_new_arrival: product.is_new_arrival,
-      variants: product.variants.length > 0 ? product.variants.map((v) => ({ id: v.id, size: v.size, color: v.color, color_hex: v.color_hex || '', stock: v.stock, additional_price: Number(v.additional_price), is_active: v.is_active })) : [{ id: '', size: 'M', color: 'Black', color_hex: '#000000', stock: 10, additional_price: 0, is_active: true }],
+      variants: product.variants.length > 0 ? product.variants.map((v) => ({ id: v.id, size: v.size, color: v.color, color_hex: v.color_hex || '', stock: v.stock, additional_price: String(v.additional_price), is_active: v.is_active })) : [{ id: '', size: 'M', color: 'Black', color_hex: '#000000', stock: 10, additional_price: '0', is_active: true }],
     });
     setProductImages(product.images || []);
     setEditId(productId);
@@ -282,11 +282,11 @@ export default function AdminProducts() {
                   </div>
                   <div className="mt-3">
                     <label className="block text-xs text-gray-500 mb-1">Extra Price (₹) — added on top of base sale price</label>
-                    <input value={v.additional_price} onChange={(e) => updateVariant(i, 'additional_price', parseFloat(e.target.value) || 0)} placeholder="0.00" type="number" step="0.01" className="input-field text-sm md:w-1/4" />
+                    <input value={v.additional_price} onChange={(e) => updateVariant(i, 'additional_price', e.target.value)} placeholder="0.00" type="number" step="0.01" className="input-field text-sm md:w-1/4" />
                   </div>
                 </div>
               ))}
-              <button type="button" onClick={() => setForm({ ...form, variants: [...form.variants, { id: '', size: '', color: '', color_hex: '', stock: 0, additional_price: 0, is_active: true }] })} className="text-sm text-primary-800 underline">
+              <button type="button" onClick={() => setForm({ ...form, variants: [...form.variants, { id: '', size: '', color: '', color_hex: '', stock: 0, additional_price: '0', is_active: true }] })} className="text-sm text-primary-800 underline">
                 + Add Variant
               </button>
             </div>
