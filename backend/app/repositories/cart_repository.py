@@ -27,7 +27,9 @@ class CartRepository(BaseRepository[CartItem]):
     async def get_cart_item(
         self, user_id: str, product_id: str, size: Optional[str] = None, color: Optional[str] = None
     ) -> Optional[CartItem]:
-        query = select(CartItem).where(
+        query = select(CartItem).options(
+            selectinload(CartItem.product).selectinload(Product.images)
+        ).where(
             CartItem.user_id == user_id,
             CartItem.product_id == product_id,
         )
@@ -36,6 +38,14 @@ class CartRepository(BaseRepository[CartItem]):
         if color:
             query = query.where(CartItem.color == color)
         result = await self.db.execute(query)
+        return result.scalar_one_or_none()
+
+    async def get_by_id_with_product(self, item_id: str) -> Optional[CartItem]:
+        result = await self.db.execute(
+            select(CartItem)
+            .options(selectinload(CartItem.product).selectinload(Product.images))
+            .where(CartItem.id == item_id)
+        )
         return result.scalar_one_or_none()
 
     async def clear_user_cart(self, user_id: str) -> None:

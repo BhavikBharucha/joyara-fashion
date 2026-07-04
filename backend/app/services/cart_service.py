@@ -29,7 +29,7 @@ class CartService:
         if existing:
             existing.quantity += data.quantity
             await self.repo.db.flush()
-            await self.repo.db.refresh(existing)
+            existing = await self.repo.get_by_id_with_product(existing.id)
             return CartItemResponse.model_validate(existing)
 
         cart_item = CartItem(
@@ -41,6 +41,7 @@ class CartService:
             quantity=data.quantity,
         )
         cart_item = await self.repo.create(cart_item)
+        cart_item = await self.repo.get_by_id_with_product(cart_item.id)
         return CartItemResponse.model_validate(cart_item)
 
     async def update_cart_item(
@@ -49,7 +50,8 @@ class CartService:
         item = await self.repo.get_by_id(item_id)
         if not item or item.user_id != user_id:
             raise HTTPException(status_code=404, detail="Cart item not found")
-        item = await self.repo.update(item, {"quantity": data.quantity})
+        await self.repo.update(item, {"quantity": data.quantity})
+        item = await self.repo.get_by_id_with_product(item_id)
         return CartItemResponse.model_validate(item)
 
     async def remove_from_cart(self, user_id: str, item_id: str) -> None:
