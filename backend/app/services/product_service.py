@@ -48,6 +48,10 @@ class ProductService:
         while await self.repo.get_by_sku(sku):
             sku = generate_sku()
 
+        discount = data.discount_percent
+        if data.original_price and data.sale_price and data.original_price > 0:
+            discount = round(((data.original_price - data.sale_price) / data.original_price) * 100)
+
         product = Product(
             name=data.name,
             slug=slug,
@@ -56,7 +60,7 @@ class ProductService:
             sku=sku,
             original_price=data.original_price,
             sale_price=data.sale_price,
-            discount_percent=data.discount_percent,
+            discount_percent=discount,
             category_id=data.category_id,
             tags=data.tags,
             is_active=data.is_active,
@@ -104,6 +108,11 @@ class ProductService:
         update_data = data.model_dump(exclude_unset=True)
         if "name" in update_data:
             update_data["slug"] = slugify(update_data["name"])
+
+        op = update_data.get("original_price", product.original_price)
+        sp = update_data.get("sale_price", product.sale_price)
+        if op and sp and float(op) > 0:
+            update_data["discount_percent"] = round(((float(op) - float(sp)) / float(op)) * 100)
 
         await self.repo.update(product, update_data)
         return await self._get_product_response(product_id)

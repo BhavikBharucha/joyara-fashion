@@ -34,19 +34,19 @@ export default function AdminProducts() {
 
   const createMutation = useMutation({
     mutationFn: (data: Record<string, unknown>) => productService.create(data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-products'] }); resetForm(); toast.success('Product created'); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-products'] }); queryClient.invalidateQueries({ queryKey: ['product'] }); queryClient.invalidateQueries({ queryKey: ['featured-products'] }); queryClient.invalidateQueries({ queryKey: ['new-arrivals'] }); queryClient.invalidateQueries({ queryKey: ['trending-products'] }); resetForm(); toast.success('Product created'); },
     onError: () => toast.error('Failed to create product'),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) => productService.update(id, data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-products'] }); resetForm(); toast.success('Product updated'); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-products'] }); queryClient.invalidateQueries({ queryKey: ['product'] }); queryClient.invalidateQueries({ queryKey: ['featured-products'] }); queryClient.invalidateQueries({ queryKey: ['new-arrivals'] }); queryClient.invalidateQueries({ queryKey: ['trending-products'] }); resetForm(); toast.success('Product updated'); },
     onError: () => toast.error('Failed to update product'),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => productService.delete(id),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-products'] }); toast.success('Product deleted'); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-products'] }); queryClient.invalidateQueries({ queryKey: ['product'] }); queryClient.invalidateQueries({ queryKey: ['featured-products'] }); queryClient.invalidateQueries({ queryKey: ['new-arrivals'] }); queryClient.invalidateQueries({ queryKey: ['trending-products'] }); toast.success('Product deleted'); },
     onError: () => toast.error('Failed to delete product'),
   });
 

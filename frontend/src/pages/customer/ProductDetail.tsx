@@ -29,6 +29,7 @@ export default function ProductDetail() {
     queryKey: ['product', slug],
     queryFn: () => productService.getBySlug(slug!).then((r) => r.data),
     enabled: !!slug,
+    staleTime: 0,
   });
 
   const { data: related } = useQuery({
