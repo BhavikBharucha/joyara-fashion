@@ -18,17 +18,17 @@ export default function AdminCategories() {
 
   const createMutation = useMutation({
     mutationFn: (data: Record<string, unknown>) => categoryService.create(data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-categories'] }); resetForm(); toast.success('Category created'); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-categories'] }); queryClient.invalidateQueries({ queryKey: ['admin-categories-list'] }); resetForm(); toast.success('Category created'); },
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) => categoryService.update(id, data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-categories'] }); resetForm(); toast.success('Category updated'); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-categories'] }); queryClient.invalidateQueries({ queryKey: ['admin-categories-list'] }); resetForm(); toast.success('Category updated'); },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => categoryService.delete(id),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-categories'] }); toast.success('Category deleted'); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-categories'] }); queryClient.invalidateQueries({ queryKey: ['admin-categories-list'] }); toast.success('Category deleted'); },
   });
 
   const resetForm = () => { setShowForm(false); setEditId(null); setForm({ name: '', description: '', parent_id: '', sort_order: 0, is_active: true, is_featured: false }); };

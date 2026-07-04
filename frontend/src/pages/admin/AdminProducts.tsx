@@ -29,6 +29,7 @@ export default function AdminProducts() {
   const { data: categories } = useQuery({
     queryKey: ['admin-categories-list'],
     queryFn: () => categoryService.getAll(1, 100).then((r) => r.data),
+    staleTime: 0,
   });
 
   const createMutation = useMutation({
@@ -140,9 +141,44 @@ export default function AdminProducts() {
     setForm({ ...form, variants: form.variants.filter((_, i) => i !== index) });
   };
 
+  const COLOR_NAMES: Record<string, string> = {
+    '#000000': 'Black', '#ffffff': 'White', '#ff0000': 'Red', '#00ff00': 'Green',
+    '#0000ff': 'Blue', '#ffff00': 'Yellow', '#ff00ff': 'Magenta', '#00ffff': 'Cyan',
+    '#800000': 'Maroon', '#808000': 'Olive', '#008000': 'Dark Green', '#800080': 'Purple',
+    '#008080': 'Teal', '#000080': 'Navy', '#c0c0c0': 'Silver', '#808080': 'Gray',
+    '#ffa500': 'Orange', '#ffc0cb': 'Pink', '#a52a2a': 'Brown', '#f5f5dc': 'Beige',
+    '#ffe4c4': 'Bisque', '#d2691e': 'Chocolate', '#dc143c': 'Crimson', '#b8860b': 'Dark Gold',
+    '#ff6347': 'Tomato', '#4b0082': 'Indigo', '#ee82ee': 'Violet', '#f0e68c': 'Khaki',
+    '#e6e6fa': 'Lavender', '#fffff0': 'Ivory', '#faf0e6': 'Linen', '#fffacd': 'Lemon',
+  };
+
+  const getClosestColorName = (hex: string): string => {
+    const lower = hex.toLowerCase();
+    if (COLOR_NAMES[lower]) return COLOR_NAMES[lower];
+    const r = parseInt(lower.slice(1, 3), 16);
+    const g = parseInt(lower.slice(3, 5), 16);
+    const b = parseInt(lower.slice(5, 7), 16);
+    let closest = 'Custom';
+    let minDist = Infinity;
+    for (const [key, name] of Object.entries(COLOR_NAMES)) {
+      const cr = parseInt(key.slice(1, 3), 16);
+      const cg = parseInt(key.slice(3, 5), 16);
+      const cb = parseInt(key.slice(5, 7), 16);
+      const dist = Math.sqrt((r - cr) ** 2 + (g - cg) ** 2 + (b - cb) ** 2);
+      if (dist < minDist) { minDist = dist; closest = name; }
+    }
+    return closest;
+  };
+
   const updateVariant = (index: number, field: string, value: string | number) => {
     const vs = [...form.variants];
     vs[index] = { ...vs[index], [field]: value };
+    setForm({ ...form, variants: vs });
+  };
+
+  const handleColorPickerChange = (index: number, hex: string) => {
+    const vs = [...form.variants];
+    vs[index] = { ...vs[index], color_hex: hex, color: getClosestColorName(hex) };
     setForm({ ...form, variants: vs });
   };
 
@@ -186,11 +222,22 @@ export default function AdminProducts() {
             <div>
               <h4 className="text-sm font-medium mb-2">Variants</h4>
               {form.variants.map((v, i) => (
-                <div key={i} className="flex items-center gap-2 mb-2">
-                  <input value={v.size} onChange={(e) => updateVariant(i, 'size', e.target.value)} placeholder="Size" className="input-field text-sm flex-1" />
-                  <input value={v.color} onChange={(e) => updateVariant(i, 'color', e.target.value)} placeholder="Color" className="input-field text-sm flex-1" />
-                  <input value={v.color_hex} onChange={(e) => updateVariant(i, 'color_hex', e.target.value)} placeholder="#hex" className="input-field text-sm flex-1" />
-                  <input value={v.stock} onChange={(e) => updateVariant(i, 'stock', parseInt(e.target.value) || 0)} placeholder="Stock" type="number" className="input-field text-sm flex-1" />
+                <div key={i} className="flex items-center gap-2 mb-3 p-3 border border-gray-100 rounded-lg bg-gray-50/50">
+                  <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-2">
+                    <input value={v.size} onChange={(e) => updateVariant(i, 'size', e.target.value)} placeholder="Size (S, M, L...)" className="input-field text-sm" />
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={v.color_hex || '#000000'}
+                        onChange={(e) => handleColorPickerChange(i, e.target.value)}
+                        className="w-10 h-10 rounded cursor-pointer border border-gray-200 shrink-0 p-0.5"
+                        title="Pick color"
+                      />
+                      <input value={v.color} onChange={(e) => updateVariant(i, 'color', e.target.value)} placeholder="Color Name" className="input-field text-sm w-full" />
+                    </div>
+                    <input value={v.color_hex} onChange={(e) => updateVariant(i, 'color_hex', e.target.value)} placeholder="#hex" className="input-field text-sm" />
+                    <input value={v.stock} onChange={(e) => updateVariant(i, 'stock', parseInt(e.target.value) || 0)} placeholder="Stock" type="number" className="input-field text-sm" />
+                  </div>
                   <button
                     type="button"
                     onClick={() => removeVariant(i)}

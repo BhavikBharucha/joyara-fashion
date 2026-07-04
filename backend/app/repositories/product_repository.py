@@ -30,6 +30,17 @@ class ProductRepository(BaseRepository[Product]):
         )
         return result.scalar_one_or_none()
 
+    async def get_all(
+        self, skip: int = 0, limit: int = 20, filters=None
+    ) -> List[Product]:
+        query = self._with_relations(select(Product))
+        if filters:
+            for f in filters:
+                query = query.where(f)
+        query = query.order_by(Product.created_at.desc()).offset(skip).limit(limit)
+        result = await self.db.execute(query)
+        return list(result.scalars().unique().all())
+
     async def get_by_sku(self, sku: str) -> Optional[Product]:
         result = await self.db.execute(select(Product).where(Product.sku == sku))
         return result.scalar_one_or_none()
