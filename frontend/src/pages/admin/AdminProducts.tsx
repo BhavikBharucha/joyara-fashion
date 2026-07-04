@@ -1,15 +1,19 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, PencilIcon, TrashIcon, PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import { productService } from '../../services/productService';
 import { categoryService } from '../../services/categoryService';
 import { TableSkeleton } from '../../components/common/Skeleton';
+import type { ProductImage } from '../../types';
 
 export default function AdminProducts() {
   const [page, setPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const [productImages, setProductImages] = useState<ProductImage[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({
     name: '', description: '', short_description: '', original_price: '', sale_price: '', discount_percent: '0',
     category_id: '', tags: '', is_active: true, is_featured: false, is_trending: false, is_new_arrival: true,
@@ -48,6 +52,7 @@ export default function AdminProducts() {
   const resetForm = () => {
     setShowForm(false);
     setEditId(null);
+    setProductImages([]);
     setForm({
       name: '', description: '', short_description: '', original_price: '', sale_price: '', discount_percent: '0',
       category_id: '', tags: '', is_active: true, is_featured: false, is_trending: false, is_new_arrival: true,
@@ -90,8 +95,55 @@ export default function AdminProducts() {
       is_new_arrival: product.is_new_arrival,
       variants: product.variants.length > 0 ? product.variants.map((v) => ({ ...v, color_hex: v.color_hex || '' })) : [{ size: 'M', color: 'Black', color_hex: '#000000', stock: 10, additional_price: 0, is_active: true }],
     });
+    setProductImages(product.images || []);
     setEditId(productId);
     setShowForm(true);
+  };
+
+  const handleImageUpload = async (files: FileList | null) => {
+    if (!files || !editId) return;
+    setUploadingImages(true);
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const isPrimary = productImages.length === 0 && i === 0;
+        await productService.uploadImage(editId, files[i], isPrimary);
+      }
+      const { data: product } = await productService.getById(editId);
+      setProductImages(product.images || []);
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      toast.success(`${files.length} image(s) uploaded`);
+    } catch {
+      toast.error('Failed to upload image');
+    } finally {
+      setUploadingImages(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleDeleteImage = async (imageId: string) => {
+    if (!confirm('Delete this image?')) return;
+    try {
+      await productService.deleteImage(imageId);
+      setProductImages((prev) => prev.filter((img) => img.id !== imageId));
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      toast.success('Image deleted');
+    } catch {
+      toast.error('Failed to delete image');
+    }
+  };
+
+  const removeVariant = (index: number) => {
+    if (form.variants.length <= 1) {
+      toast.error('At least one variant is required');
+      return;
+    }
+    setForm({ ...form, variants: form.variants.filter((_, i) => i !== index) });
+  };
+
+  const updateVariant = (index: number, field: string, value: string | number) => {
+    const vs = [...form.variants];
+    vs[index] = { ...vs[index], [field]: value };
+    setForm({ ...form, variants: vs });
   };
 
   return (
@@ -129,21 +181,90 @@ export default function AdminProducts() {
             ))}
           </div>
 
-          {/* Variants (only for new products) */}
+          {/* Variants */}
           {!editId && (
             <div>
               <h4 className="text-sm font-medium mb-2">Variants</h4>
               {form.variants.map((v, i) => (
-                <div key={i} className="grid grid-cols-4 gap-2 mb-2">
-                  <input value={v.size} onChange={(e) => { const vs = [...form.variants]; vs[i] = { ...vs[i], size: e.target.value }; setForm({ ...form, variants: vs }); }} placeholder="Size" className="input-field text-sm" />
-                  <input value={v.color} onChange={(e) => { const vs = [...form.variants]; vs[i] = { ...vs[i], color: e.target.value }; setForm({ ...form, variants: vs }); }} placeholder="Color" className="input-field text-sm" />
-                  <input value={v.color_hex} onChange={(e) => { const vs = [...form.variants]; vs[i] = { ...vs[i], color_hex: e.target.value }; setForm({ ...form, variants: vs }); }} placeholder="#hex" className="input-field text-sm" />
-                  <input value={v.stock} onChange={(e) => { const vs = [...form.variants]; vs[i] = { ...vs[i], stock: parseInt(e.target.value) || 0 }; setForm({ ...form, variants: vs }); }} placeholder="Stock" type="number" className="input-field text-sm" />
+                <div key={i} className="flex items-center gap-2 mb-2">
+                  <input value={v.size} onChange={(e) => updateVariant(i, 'size', e.target.value)} placeholder="Size" className="input-field text-sm flex-1" />
+                  <input value={v.color} onChange={(e) => updateVariant(i, 'color', e.target.value)} placeholder="Color" className="input-field text-sm flex-1" />
+                  <input value={v.color_hex} onChange={(e) => updateVariant(i, 'color_hex', e.target.value)} placeholder="#hex" className="input-field text-sm flex-1" />
+                  <input value={v.stock} onChange={(e) => updateVariant(i, 'stock', parseInt(e.target.value) || 0)} placeholder="Stock" type="number" className="input-field text-sm flex-1" />
+                  <button
+                    type="button"
+                    onClick={() => removeVariant(i)}
+                    className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors shrink-0"
+                    title="Remove variant"
+                  >
+                    <XMarkIcon className="w-5 h-5" />
+                  </button>
                 </div>
               ))}
               <button type="button" onClick={() => setForm({ ...form, variants: [...form.variants, { size: '', color: '', color_hex: '', stock: 0, additional_price: 0, is_active: true }] })} className="text-sm text-primary-800 underline">
                 + Add Variant
               </button>
+            </div>
+          )}
+
+          {/* Image Upload (only when editing an existing product) */}
+          {editId && (
+            <div>
+              <h4 className="text-sm font-medium mb-3">Product Images</h4>
+
+              {/* Existing images */}
+              {productImages.length > 0 && (
+                <div className="flex flex-wrap gap-3 mb-4">
+                  {productImages.map((img) => (
+                    <div key={img.id} className="relative group w-24 h-24 border border-gray-200 rounded-lg overflow-hidden">
+                      <img src={img.image_url} alt={img.alt_text || ''} className="w-full h-full object-cover" />
+                      {img.is_primary && (
+                        <span className="absolute top-1 left-1 bg-primary-800 text-white text-[9px] px-1.5 py-0.5 rounded">Primary</span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteImage(img.id)}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <XMarkIcon className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Upload area */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(e) => handleImageUpload(e.target.files)}
+                className="hidden"
+                id="product-image-upload"
+              />
+              <label
+                htmlFor="product-image-upload"
+                className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-primary-800 hover:bg-primary-50/30 transition-colors ${uploadingImages ? 'opacity-50 pointer-events-none' : ''}`}
+              >
+                <PhotoIcon className="w-8 h-8 text-gray-400 mb-2" />
+                <span className="text-sm text-gray-500">
+                  {uploadingImages ? 'Uploading...' : 'Click to upload images'}
+                </span>
+                <span className="text-xs text-gray-400 mt-1">PNG, JPG up to 5MB each</span>
+              </label>
+
+              {!editId && (
+                <p className="text-xs text-gray-400 mt-2">Save the product first, then you can upload images.</p>
+              )}
+            </div>
+          )}
+
+          {/* Note for new products about image upload */}
+          {!editId && (
+            <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <PhotoIcon className="w-5 h-5 text-amber-600 shrink-0" />
+              <p className="text-xs text-amber-700">Create the product first, then click the edit button to upload images.</p>
             </div>
           )}
 
@@ -172,7 +293,13 @@ export default function AdminProducts() {
                 <tr key={product.id} className="border-b border-gray-50 hover:bg-gray-50/50">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      {product.images[0] && <img src={product.images[0].image_url} className="w-10 h-10 object-cover rounded" alt="" />}
+                      {product.images[0] ? (
+                        <img src={product.images[0].image_url} className="w-10 h-10 object-cover rounded" alt="" />
+                      ) : (
+                        <div className="w-10 h-10 bg-gray-100 rounded flex items-center justify-center">
+                          <PhotoIcon className="w-5 h-5 text-gray-400" />
+                        </div>
+                      )}
                       <span className="font-medium truncate max-w-[200px]">{product.name}</span>
                     </div>
                   </td>
