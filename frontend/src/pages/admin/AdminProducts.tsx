@@ -35,19 +35,19 @@ export default function AdminProducts() {
 
   const createMutation = useMutation({
     mutationFn: (data: Record<string, unknown>) => productService.create(data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-products'] }); queryClient.invalidateQueries({ queryKey: ['product'] }); queryClient.invalidateQueries({ queryKey: ['featured-products'] }); queryClient.invalidateQueries({ queryKey: ['new-arrivals'] }); queryClient.invalidateQueries({ queryKey: ['trending-products'] }); resetForm(); toast.success('Product created'); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-products'] }); queryClient.invalidateQueries({ queryKey: ['product'] }); queryClient.invalidateQueries({ queryKey: ['featured-products'] }); queryClient.invalidateQueries({ queryKey: ['new-arrivals'] }); queryClient.invalidateQueries({ queryKey: ['trending-products'] }); queryClient.invalidateQueries({ queryKey: ['search'] }); resetForm(); toast.success('Product created'); },
     onError: () => toast.error('Failed to create product'),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) => productService.update(id, data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-products'] }); queryClient.invalidateQueries({ queryKey: ['product'] }); queryClient.invalidateQueries({ queryKey: ['featured-products'] }); queryClient.invalidateQueries({ queryKey: ['new-arrivals'] }); queryClient.invalidateQueries({ queryKey: ['trending-products'] }); resetForm(); toast.success('Product updated'); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-products'] }); queryClient.invalidateQueries({ queryKey: ['product'] }); queryClient.invalidateQueries({ queryKey: ['featured-products'] }); queryClient.invalidateQueries({ queryKey: ['new-arrivals'] }); queryClient.invalidateQueries({ queryKey: ['trending-products'] }); queryClient.invalidateQueries({ queryKey: ['search'] }); resetForm(); toast.success('Product updated'); },
     onError: () => toast.error('Failed to update product'),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => productService.delete(id),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-products'] }); queryClient.invalidateQueries({ queryKey: ['product'] }); queryClient.invalidateQueries({ queryKey: ['featured-products'] }); queryClient.invalidateQueries({ queryKey: ['new-arrivals'] }); queryClient.invalidateQueries({ queryKey: ['trending-products'] }); toast.success('Product deleted'); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-products'] }); queryClient.invalidateQueries({ queryKey: ['product'] }); queryClient.invalidateQueries({ queryKey: ['featured-products'] }); queryClient.invalidateQueries({ queryKey: ['new-arrivals'] }); queryClient.invalidateQueries({ queryKey: ['trending-products'] }); queryClient.invalidateQueries({ queryKey: ['search'] }); toast.success('Product deleted'); },
     onError: () => toast.error('Failed to delete product'),
   });
 
@@ -244,31 +244,46 @@ export default function AdminProducts() {
           <div>
               <h4 className="text-sm font-medium mb-2">Variants</h4>
               {form.variants.map((v, i) => (
-                <div key={i} className="flex items-center gap-2 mb-3 p-3 border border-gray-100 rounded-lg bg-gray-50/50">
-                  <div className="flex-1 grid grid-cols-2 md:grid-cols-5 gap-2">
-                    <input value={v.size} onChange={(e) => updateVariant(i, 'size', e.target.value)} placeholder="Size (S, M, L...)" className="input-field text-sm" />
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={v.color_hex || '#000000'}
-                        onChange={(e) => handleColorPickerChange(i, e.target.value)}
-                        className="w-10 h-10 rounded cursor-pointer border border-gray-200 shrink-0 p-0.5"
-                        title="Pick color"
-                      />
-                      <input value={v.color} onChange={(e) => updateVariant(i, 'color', e.target.value)} placeholder="Color Name" className="input-field text-sm w-full" />
-                    </div>
-                    <input value={v.color_hex} onChange={(e) => updateVariant(i, 'color_hex', e.target.value)} placeholder="#hex" className="input-field text-sm" />
-                    <input value={v.stock} onChange={(e) => updateVariant(i, 'stock', parseInt(e.target.value) || 0)} placeholder="Stock" type="number" className="input-field text-sm" />
-                    <input value={v.additional_price} onChange={(e) => updateVariant(i, 'additional_price', parseFloat(e.target.value) || 0)} placeholder="Extra Price" type="number" step="0.01" className="input-field text-sm" title="Additional price for this variant" />
-                  </div>
+                <div key={i} className="relative mb-3 p-4 border border-gray-200 rounded-lg bg-gray-50/50">
                   <button
                     type="button"
                     onClick={() => removeVariant(i)}
-                    className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors shrink-0"
+                    className="absolute top-2 right-2 p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                     title="Remove variant"
                   >
-                    <XMarkIcon className="w-5 h-5" />
+                    <XMarkIcon className="w-4 h-4" />
                   </button>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Size</label>
+                      <input value={v.size} onChange={(e) => updateVariant(i, 'size', e.target.value)} placeholder="S, M, L..." className="input-field text-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Color</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={v.color_hex || '#000000'}
+                          onChange={(e) => handleColorPickerChange(i, e.target.value)}
+                          className="w-10 h-10 rounded cursor-pointer border border-gray-200 shrink-0 p-0.5"
+                          title="Pick color"
+                        />
+                        <input value={v.color} onChange={(e) => updateVariant(i, 'color', e.target.value)} placeholder="Color Name" className="input-field text-sm w-full" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Color Hex</label>
+                      <input value={v.color_hex} onChange={(e) => updateVariant(i, 'color_hex', e.target.value)} placeholder="#000000" className="input-field text-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Stock</label>
+                      <input value={v.stock} onChange={(e) => updateVariant(i, 'stock', parseInt(e.target.value) || 0)} placeholder="0" type="number" className="input-field text-sm" />
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <label className="block text-xs text-gray-500 mb-1">Extra Price (₹) — added on top of base sale price</label>
+                    <input value={v.additional_price} onChange={(e) => updateVariant(i, 'additional_price', parseFloat(e.target.value) || 0)} placeholder="0.00" type="number" step="0.01" className="input-field text-sm md:w-1/4" />
+                  </div>
                 </div>
               ))}
               <button type="button" onClick={() => setForm({ ...form, variants: [...form.variants, { id: '', size: '', color: '', color_hex: '', stock: 0, additional_price: 0, is_active: true }] })} className="text-sm text-primary-800 underline">

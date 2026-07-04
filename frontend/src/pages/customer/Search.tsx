@@ -17,6 +17,9 @@ export default function Search() {
   const page = parseInt(searchParams.get('page') || '1');
   const minPrice = searchParams.get('min_price') ? parseFloat(searchParams.get('min_price')!) : undefined;
   const maxPrice = searchParams.get('max_price') ? parseFloat(searchParams.get('max_price')!) : undefined;
+  const isTrending = searchParams.get('is_trending') === 'true' ? true : undefined;
+  const isFeatured = searchParams.get('is_featured') === 'true' ? true : undefined;
+  const isNewArrival = searchParams.get('is_new_arrival') === 'true' ? true : undefined;
 
   const { data: categories } = useQuery({
     queryKey: ['categories-active'],
@@ -24,7 +27,7 @@ export default function Search() {
   });
 
   const { data, isLoading } = useQuery({
-    queryKey: ['search', q, categoryId, sortBy, page, minPrice, maxPrice],
+    queryKey: ['search', q, categoryId, sortBy, page, minPrice, maxPrice, isTrending, isFeatured, isNewArrival],
     queryFn: () =>
       productService.search({
         q: q || undefined,
@@ -34,7 +37,11 @@ export default function Search() {
         page_size: 20,
         min_price: minPrice,
         max_price: maxPrice,
+        is_trending: isTrending,
+        is_featured: isFeatured,
+        is_new_arrival: isNewArrival,
       }).then((r) => r.data),
+    staleTime: 0,
   });
 
   const updateParam = (key: string, value: string) => {
@@ -51,7 +58,7 @@ export default function Search() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="section-title">
-            {q ? `Results for "${q}"` : categoryId ? 'Category' : 'All Products'}
+            {q ? `Results for "${q}"` : isTrending ? 'Trending' : isFeatured ? 'Featured' : isNewArrival ? 'New Arrivals' : categoryId ? 'Category' : 'All Products'}
           </h1>
           {data && <p className="text-sm text-secondary-500 mt-1">{data.total} products found</p>}
         </div>

@@ -54,6 +54,9 @@ class ProductRepository(BaseRepository[Product]):
         colors: Optional[List[str]] = None,
         sizes: Optional[List[str]] = None,
         in_stock: Optional[bool] = None,
+        is_trending: Optional[bool] = None,
+        is_featured: Optional[bool] = None,
+        is_new_arrival: Optional[bool] = None,
         sort_by: str = "newest",
         skip: int = 0,
         limit: int = 20,
@@ -83,6 +86,15 @@ class ProductRepository(BaseRepository[Product]):
 
         if in_stock:
             query = query.where(Product.total_stock > 0)
+
+        if is_trending is not None:
+            query = query.where(Product.is_trending == is_trending)
+
+        if is_featured is not None:
+            query = query.where(Product.is_featured == is_featured)
+
+        if is_new_arrival is not None:
+            query = query.where(Product.is_new_arrival == is_new_arrival)
 
         sort_map = {
             "newest": Product.created_at.desc(),

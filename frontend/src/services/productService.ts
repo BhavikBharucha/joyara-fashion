@@ -7,6 +7,9 @@ interface SearchParams {
   min_price?: number;
   max_price?: number;
   in_stock?: boolean;
+  is_trending?: boolean;
+  is_featured?: boolean;
+  is_new_arrival?: boolean;
   sort_by?: string;
   page?: number;
   page_size?: number;
