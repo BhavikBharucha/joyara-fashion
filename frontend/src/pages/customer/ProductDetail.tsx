@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -44,22 +44,76 @@ export default function ProductDetail() {
     enabled: !!product?.id,
   });
 
+  const inStockColors = useMemo(() => {
+    if (!product) return [];
+    const colorStockMap = new Map<string, { color: string; hex: string | null; totalStock: number }>();
+    for (const v of product.variants) {
+      const existing = colorStockMap.get(v.color);
+      if (existing) {
+        existing.totalStock += v.stock;
+      } else {
+        colorStockMap.set(v.color, { color: v.color, hex: v.color_hex, totalStock: v.stock });
+      }
+    }
+    return Array.from(colorStockMap.values()).filter((c) => c.totalStock > 0);
+  }, [product]);
+
+  const inStockSizes = useMemo(() => {
+    if (!product) return [];
+    const sizeStockMap = new Map<string, number>();
+    for (const v of product.variants) {
+      if (selectedColor && v.color !== selectedColor) continue;
+      sizeStockMap.set(v.size, (sizeStockMap.get(v.size) || 0) + v.stock);
+    }
+    return Array.from(sizeStockMap.entries()).filter(([, stock]) => stock > 0).map(([size]) => size);
+  }, [product, selectedColor]);
+
+  const selectedVariant = useMemo(() => {
+    if (!product) return null;
+    return product.variants.find((v) =>
+      (selectedSize ? v.size === selectedSize : true) &&
+      (selectedColor ? v.color === selectedColor : true) &&
+      v.stock > 0
+    ) || null;
+  }, [product, selectedSize, selectedColor]);
+
+  const maxQuantity = useMemo(() => {
+    if (selectedVariant) return selectedVariant.stock;
+    if (!product) return 1;
+    if (selectedColor && selectedSize) {
+      const v = product.variants.find((v) => v.size === selectedSize && v.color === selectedColor);
+      return v ? v.stock : 0;
+    }
+    return product.total_stock || 1;
+  }, [product, selectedVariant, selectedColor, selectedSize]);
+
   if (isLoading) return <div className="container-custom py-20"><ProductGridSkeleton count={1} /></div>;
   if (!product) return <div className="container-custom py-20 text-center">Product not found</div>;
 
   const isWishlisted = wishlistItems.some((i) => i.product_id === product.id);
   const effectivePrice = product.sale_price || product.original_price;
-  const sizes = [...new Set(product.variants.map((v) => v.size))];
-  const colors = [...new Set(product.variants.map((v) => v.color))];
-  const uniqueColors = product.variants.reduce((acc, v) => {
-    if (!acc.find((c) => c.color === v.color)) acc.push({ color: v.color, hex: v.color_hex });
-    return acc;
-  }, [] as { color: string; hex: string | null }[]);
+  const allSizes = [...new Set(product.variants.map((v) => v.size))];
+  const allColors = [...new Set(product.variants.map((v) => v.color))];
+
+  const handleSizeSelect = (size: string) => {
+    setSelectedSize(size);
+    setQuantity(1);
+  };
+
+  const handleColorSelect = (color: string) => {
+    setSelectedColor(color);
+    setQuantity(1);
+    const colorIndex = product.images.findIndex((img) =>
+      img.alt_text?.toLowerCase().includes(color.toLowerCase())
+    );
+    if (colorIndex >= 0) setSelectedImage(colorIndex);
+  };
 
   const handleAddToCart = async () => {
     if (!isAuthenticated) { toast.error('Please login first'); return; }
-    if (sizes.length > 0 && !selectedSize) { toast.error('Please select a size'); return; }
-    if (colors.length > 0 && !selectedColor) { toast.error('Please select a color'); return; }
+    if (allSizes.length > 0 && !selectedSize) { toast.error('Please select a size'); return; }
+    if (allColors.length > 0 && !selectedColor) { toast.error('Please select a color'); return; }
+    if (maxQuantity <= 0) { toast.error('Selected variant is out of stock'); return; }
 
     try {
       const { data } = await cartService.addToCart({
@@ -150,34 +204,42 @@ export default function ProductDetail() {
           )}
 
           {/* Size selection */}
-          {sizes.length > 0 && (
+          {allSizes.length > 0 && (
             <div className="mb-6">
               <p className="text-sm tracking-widest uppercase mb-3">Size</p>
               <div className="flex gap-2">
-                {sizes.map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`w-12 h-12 border text-sm flex items-center justify-center transition-colors ${
-                      selectedSize === size ? 'bg-secondary-900 text-white border-secondary-900' : 'border-secondary-200 hover:border-secondary-900'
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
+                {allSizes.map((size) => {
+                  const isAvailable = inStockSizes.includes(size);
+                  return (
+                    <button
+                      key={size}
+                      onClick={() => isAvailable && handleSizeSelect(size)}
+                      disabled={!isAvailable}
+                      className={`w-12 h-12 border text-sm flex items-center justify-center transition-colors ${
+                        !isAvailable
+                          ? 'border-secondary-100 text-secondary-300 cursor-not-allowed line-through bg-secondary-50'
+                          : selectedSize === size
+                            ? 'bg-secondary-900 text-white border-secondary-900'
+                            : 'border-secondary-200 hover:border-secondary-900'
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
 
           {/* Color selection */}
-          {uniqueColors.length > 0 && (
+          {inStockColors.length > 0 && (
             <div className="mb-6">
               <p className="text-sm tracking-widest uppercase mb-3">Color {selectedColor && `- ${selectedColor}`}</p>
               <div className="flex gap-2">
-                {uniqueColors.map((c) => (
+                {inStockColors.map((c) => (
                   <button
                     key={c.color}
-                    onClick={() => setSelectedColor(c.color)}
+                    onClick={() => handleColorSelect(c.color)}
                     className={`w-8 h-8 rounded-full border-2 transition-all ${
                       selectedColor === c.color ? 'border-secondary-900 scale-110' : 'border-secondary-200'
                     }`}
@@ -191,13 +253,15 @@ export default function ProductDetail() {
 
           {/* Quantity */}
           <div className="mb-8">
-            <p className="text-sm tracking-widest uppercase mb-3">Quantity</p>
+            <p className="text-sm tracking-widest uppercase mb-3">
+              Quantity {maxQuantity > 0 && <span className="text-xs text-secondary-400 normal-case tracking-normal">({maxQuantity} available)</span>}
+            </p>
             <div className="flex items-center border border-secondary-200 w-fit">
-              <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-3 hover:bg-secondary-50">
+              <button onClick={() => setQuantity(Math.max(1, quantity - 1))} disabled={quantity <= 1} className="p-3 hover:bg-secondary-50 disabled:opacity-30 disabled:cursor-not-allowed">
                 <MinusIcon className="w-4 h-4" />
               </button>
               <span className="px-6 text-sm">{quantity}</span>
-              <button onClick={() => setQuantity(quantity + 1)} className="p-3 hover:bg-secondary-50">
+              <button onClick={() => setQuantity(Math.min(maxQuantity, quantity + 1))} disabled={quantity >= maxQuantity} className="p-3 hover:bg-secondary-50 disabled:opacity-30 disabled:cursor-not-allowed">
                 <PlusIcon className="w-4 h-4" />
               </button>
             </div>
@@ -205,7 +269,9 @@ export default function ProductDetail() {
 
           {/* Actions */}
           <div className="flex gap-4 mb-8">
-            <button onClick={handleAddToCart} className="btn-primary flex-1">Add to Cart</button>
+            <button onClick={handleAddToCart} disabled={maxQuantity <= 0} className={`btn-primary flex-1 ${maxQuantity <= 0 ? 'opacity-50 cursor-not-allowed' : ''}`}>
+              {maxQuantity <= 0 ? 'Out of Stock' : 'Add to Cart'}
+            </button>
             <button onClick={toggleWishlist} className="border border-secondary-200 p-3 hover:bg-secondary-50 transition-colors">
               {isWishlisted ? <HeartSolid className="w-5 h-5 text-red-500" /> : <HeartIcon className="w-5 h-5" />}
             </button>
