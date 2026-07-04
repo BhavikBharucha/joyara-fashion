@@ -44,7 +44,7 @@ class OrderService:
         order_items = []
 
         for item_data in data.items:
-            product = await self.product_repo.get_by_id(item_data.product_id)
+            product = await self.product_repo.get_by_id_with_relations(item_data.product_id)
             if not product:
                 raise HTTPException(status_code=400, detail=f"Product not found")
             if not product.is_active:
@@ -55,7 +55,7 @@ class OrderService:
             subtotal += total_price
 
             primary_image = None
-            for img in (product.images if hasattr(product, "images") else []):
+            for img in product.images:
                 if img.is_primary:
                     primary_image = img.image_url
                     break
