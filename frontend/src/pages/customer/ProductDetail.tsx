@@ -289,10 +289,10 @@ export default function ProductDetail() {
             </button>
           </div>
 
-          {/* Description */}
+          {/* Product Overview */}
           {product.description && (
             <div className="border-t border-secondary-100 pt-6">
-              <h3 className="text-sm tracking-widest uppercase mb-3">Description</h3>
+              <h3 className="text-sm tracking-widest uppercase mb-3">Product Overview</h3>
               <p className="text-sm text-secondary-600 leading-relaxed whitespace-pre-line">{product.description}</p>
             </div>
           )}

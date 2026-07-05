@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { ArrowRightIcon } from '@heroicons/react/24/outline';
 import ProductCard from '../components/common/ProductCard';
 import { ProductGridSkeleton } from '../components/common/Skeleton';
+import HoopCustomizer from '../components/home/HoopCustomizer';
 import { productService } from '../services/productService';
 import { categoryService } from '../services/categoryService';
 
@@ -120,6 +121,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Hoop Customizer */}
+      <HoopCustomizer />
 
       {/* New Arrivals */}
       <section className="py-16 md:py-24 bg-secondary-50/50">
