@@ -9,6 +9,7 @@ import type { ProductImage } from '../../types';
 
 export default function AdminProducts() {
   const [page, setPage] = useState(1);
+  const [stockFilter, setStockFilter] = useState<'all' | 'in_stock' | 'out_of_stock'>('all');
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [uploadingImages, setUploadingImages] = useState(false);
@@ -195,7 +196,18 @@ export default function AdminProducts() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold">Products</h2>
+        <div className="flex items-center gap-4">
+          <h2 className="text-xl font-semibold">Products</h2>
+          <select
+            value={stockFilter}
+            onChange={(e) => { setStockFilter(e.target.value as 'all' | 'in_stock' | 'out_of_stock'); setPage(1); }}
+            className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:border-primary-800"
+          >
+            <option value="all">All Stock</option>
+            <option value="in_stock">In Stock</option>
+            <option value="out_of_stock">Out of Stock</option>
+          </select>
+        </div>
         <button onClick={() => { resetForm(); setShowForm(!showForm); }} className="btn-primary flex items-center gap-2 text-sm">
           <PlusIcon className="w-4 h-4" /> Add Product
         </button>
@@ -421,7 +433,7 @@ export default function AdminProducts() {
               </tr>
             </thead>
             <tbody>
-              {data?.items.map((product) => (
+              {data?.items.filter((p) => stockFilter === 'all' ? true : stockFilter === 'in_stock' ? p.total_stock > 0 : p.total_stock === 0).map((product) => (
                 <tr key={product.id} className="border-b border-gray-50 hover:bg-gray-50/50">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
@@ -439,7 +451,37 @@ export default function AdminProducts() {
                   <td className="px-4 py-3">
                     ₹{Number(product.sale_price || product.original_price).toLocaleString()}
                   </td>
-                  <td className="px-4 py-3 hidden md:table-cell">-</td>
+                  <td className="px-4 py-3 hidden md:table-cell">
+                    <div className="relative group">
+                      <span className={`font-medium ${product.total_stock === 0 ? 'text-red-600' : product.total_stock < 10 ? 'text-amber-600' : 'text-green-600'}`}>
+                        {product.total_stock}
+                      </span>
+                      {product.variants && product.variants.length > 0 && (
+                        <div className="absolute left-0 top-full mt-1 z-50 hidden group-hover:block bg-white border border-gray-200 rounded-lg shadow-lg p-3 min-w-[180px]">
+                          <p className="text-xs font-medium text-gray-700 mb-2 border-b pb-1">Stock by Color</p>
+                          {(() => {
+                            const colorStocks: Record<string, { stock: number; hex: string }> = {};
+                            product.variants.forEach((v) => {
+                              if (colorStocks[v.color]) {
+                                colorStocks[v.color].stock += v.stock;
+                              } else {
+                                colorStocks[v.color] = { stock: v.stock, hex: v.color_hex || '#888' };
+                              }
+                            });
+                            return Object.entries(colorStocks).map(([color, info]) => (
+                              <div key={color} className="flex items-center justify-between gap-3 py-1 text-xs">
+                                <div className="flex items-center gap-2">
+                                  <span className="w-3 h-3 rounded-full border border-gray-200" style={{ backgroundColor: info.hex }} />
+                                  <span className="text-gray-700">{color}</span>
+                                </div>
+                                <span className={`font-medium ${info.stock === 0 ? 'text-red-600' : 'text-gray-900'}`}>{info.stock}</span>
+                              </div>
+                            ));
+                          })()}
+                        </div>
+                      )}
+                    </div>
+                  </td>
                   <td className="px-4 py-3 hidden md:table-cell">
                     <span className={`px-2 py-0.5 text-xs rounded-full ${product.is_featured ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'}`}>
                       {product.is_featured ? 'Featured' : 'Standard'}

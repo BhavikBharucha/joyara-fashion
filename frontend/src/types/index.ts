@@ -86,10 +86,13 @@ export interface ProductListItem {
   discount_percent: number;
   avg_rating: number;
   review_count: number;
+  total_stock: number;
+  is_active: boolean;
   is_featured: boolean;
   is_trending: boolean;
   is_new_arrival: boolean;
   images: ProductImage[];
+  variants: ProductVariant[];
 }
 
 export interface CartItem {

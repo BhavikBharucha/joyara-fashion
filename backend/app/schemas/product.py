@@ -105,9 +105,12 @@ class ProductListResponse(BaseModel):
     discount_percent: int
     avg_rating: Decimal
     review_count: int
+    total_stock: int = 0
+    is_active: bool = True
     is_featured: bool
     is_trending: bool
     is_new_arrival: bool
     images: List[ProductImageResponse] = []
+    variants: List[ProductVariantResponse] = []
 
     model_config = {"from_attributes": True}
